@@ -1,0 +1,130 @@
+#Include "TOTVS.ch"
+
+/*/{Protheus.doc} zImpSYD
+Função para atualizar a tabela de NCM no Protheus
+@type  Function
+@author Pedro Henrique
+@since 16/05/2025
+@obs A atualização é baseada no JSON disponível para download em:
+https://www.gov.br/receitafederal/pt-br/assuntos/aduana-e-comercio-exterior/classificacao-fiscal-de-mercadorias/download-ncm-nomenclatura-comum-do-mercosul
+/*/
+User Function zImpSYD()
+	Local aArea := FWGetArea()
+
+	//Se a pergunta for confirmada
+	If FWAlertYesNo("Deseja atualizar a tabela de NCMs no Protheus?", "Continua")
+		Processa({|| fImporta()}, 'NCMs...')
+	EndIf
+
+	FWRestArea(aArea)
+Return
+
+Static Function fImporta()
+
+	Local cLinkDown  := "https://portalunico.siscomex.gov.br/classif/api/publico/nomenclatura/download/json?perfil=PUBLICO;charset=iso-8859-1" //Dica do charset enviada por João
+	Local cTxtJson   := ""
+	Local cError     := ""
+	Local jImport
+	Local jNomenclat
+	Local jNCMAtu
+	Local nNCMAtu    := 0
+	Local nTotal     := 0
+	Local cCodigo    := ""
+	Local cDescric   := ""
+	Local aDados     := {}
+	Local cLog       := ""
+	Local nTamDescri := TamSX3("YD_DESC_P")[01]
+
+	Local cDirTmp    := ""
+	Local cArqLog    := ""
+	Local aLogErro   := {}
+	Local cTextoErro := ""
+	Local nLinhaErro := 0
+	Local cPastaErro := ""
+	Local cNomeErro  := ""
+
+	Private lMSHelpAuto    := .T.
+	Private lAutoErrNoFile := .T.
+	Private lMsErroAuto    := .F.
+
+	cTxtJson := HttpGet(cLinkDown)
+
+	If Empty(cTxtJson)
+		FWAlertError("Houve uma falha ao baixar o JSON: " + CRLF + cError, "Erro no Download")
+		Return
+	EndIf
+
+	jImport := JsonObject():New()
+	cError  := jImport:FromJson(cTxtJson)
+
+	If !Empty(cError)
+		FWAlertError("Houve uma falha na conversão do JSON: " + CRLF + cError, "Erro no Parse")
+		Return
+	EndIf
+
+	jNomenclat := jImport:GetJsonObject('Nomenclaturas')
+	nTotal := Len(jNomenclat)
+	ProcRegua(nTotal)
+	For nNCMAtu := 1 To nTotal
+		IncProc("Processando registro " + cValToChar(nNCMAtu) + " de " + cValToChar(nTotal) + "...")
+		jNCMAtu := jNomenclat[nNCMAtu]
+
+		cCodigo := Alltrim(jNCMAtu:getJsonObject("Codigo"))
+		cCodigo := StrTran(cCodigo, ".", "")
+		cCodigo := StrTran(cCodigo, "-", "")
+
+		If Len(cCodigo) <> 8
+			Loop
+		Endif
+
+		SYD->(DbSetOrder(1)) // YD_FILIAL, YD_TEC, YD_EX_NCM, YD_EX_NBM, YD_DESTAQU.
+		If SYD->(dbSeek(FWxFilial() + cCodigo, .F.))
+			Loop
+		Endif
+
+		cDescric := Alltrim(jNCMAtu:GetJsonObject("Descricao"))
+		cDescric := DecodeUTF8(cDescric, "cp1252")
+		cDescric := StrTran(cDescric, "-", "")
+		cDescric := StrTran(cDescric, "<i>", "")
+		cDescric := StrTran(cDescric, "</i>", "")
+		cDescric := Left(LTrim(cDescric), nTamDescri)
+		cDescric := Upper(cDescric)
+
+		aDados := {}
+		aAdd(aDados, {"YD_TEC",    cCodigo,  Nil})
+		aAdd(aDados, {"YD_DESC_P", cDescric, Nil})
+		aAdd(aDados, {"YD_UNID",   "UN",     Nil})
+
+		lMsErroAuto := .F.
+		MSExecAuto({|x, y| MVC_EICA130(x, y)}, aDados, 3)
+
+		If lMsErroAuto
+			cTextoErro := "Codigo:    " + cCodigo + CRLF
+			cTextoErro += "Descricao: " + cDescric + CRLF
+			cTextoErro += "--" + CRLF + CRLF
+			aLogErro := GetAutoGRLog()
+			For nLinhaErro := 1 To Len(aLogErro)
+				cTextoErro += aLogErro[nLinhaErro] + CRLF
+			Next nLinhaErro
+
+			cPastaErro := '\x_logs\'
+			If !ExistDir(cPastaErro)
+				MakeDir(cPastaErro)
+			EndIf
+
+			cNomeErro  := 'erro_syd_cod_' + cCodigo + "_" + dToS(Date()) + '_' + StrTran(Time(), ':', '-') + '.txt'
+			MemoWrite(cPastaErro + cNomeErro, cTextoErro)
+			cLog += '- Falha ao incluir registro, codigo [' + cCodigo + '], veja o arquivo de log em ' + cPastaErro + cNomeErro + CRLF
+		Else
+			cLog += '+ Sucesso no Execauto no codigo ' + cCodigo + ';' + CRLF
+		EndIf
+	Next nNCMAtu
+
+	If !Empty(cLog)
+		cDirTmp := GetTempPath()
+		cArqLog := 'importacao_' + dToS(Date()) + '_' + StrTran(Time(), ':', '-') + '.log'
+		MemoWrite(cDirTmp + cArqLog, cLog)
+		ShellExecute('OPEN', cArqLog, '', cDirTmp, 1)
+	EndIf
+
+Return

@@ -1,0 +1,15 @@
+{
+	"version": "0.2.0",
+	"configurations": [
+		{
+			"name": "Cadastro Limpo UI",
+			"type": "debugpy",
+			"request": "launch",
+			"python": "${workspaceFolder}/Cadastro Limpo/.venv/bin/python",
+			"module": "desktop_ui",
+			"cwd": "${workspaceFolder}/Cadastro Limpo",
+			"console": "integratedTerminal",
+			"justMyCode": true
+		}
+	]
+}

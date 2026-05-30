@@ -1,0 +1,19 @@
+.DS_Store
+**/.DS_Store
+
+# Local Python env for tools (GUI deps)
+tools/.venv/
+
+# Tool output / spreadsheets (not versioned)
+*error*.json
+*.xls
+*.xlsx
+
+# SQLite write-ahead / shared memory (local cache)
+*.sqlite-shm
+*.sqlite-wal
+
+# PyInstaller / Inno (Cadastro Limpo)
+tools/build/
+tools/dist/
+tools/desktop_ui/installer/Output/

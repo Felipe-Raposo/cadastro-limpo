@@ -1,0 +1,34 @@
+[project]
+name = "char-tool"
+version = "0.1.0"
+description = "Ferramentas Excel: validação (validator) e enriquecimento (sanitiser)"
+authors = [{ name = "Felipe Raposo", email = "feliperaposo@gmail.com" }]
+license = { text = """Copyright (c) 2026. Todos os direitos reservados.
+Felipe Raposo <feliperaposo@gmail.com>
+""" }
+requires-python = ">=3.9"
+dependencies = [
+  "openpyxl>=3.1.0",
+]
+
+[project.optional-dependencies]
+gui = ["PySide6>=6.7.0"]
+
+[project.scripts]
+validator-tool = "validator.cli:main"
+sanitiser-tool = "sanitiser.cli:main"
+sanitiser = "sanitiser.cli:main"
+cadastro-limpo = "desktop_ui.main:main"
+
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["validator*", "sanitiser*", "desktop_ui*"]
+
+[tool.setuptools.package-data]
+validator = ["COPYRIGHT"]
+sanitiser = ["data/*.sqlite", "COPYRIGHT"]
+desktop_ui = ["icon.ico", "icon.png"]

@@ -1,0 +1,177 @@
+{
+	"initialLine": 5,
+	"columns": {
+		"A": {
+			"description": "Matrícula",
+			"type": "text",
+			"required": true,
+			"patterns": null
+		},
+		"B": {
+			"description": "Nome",
+			"type": "text",
+			"required": true,
+			"patterns": "ER48"
+		},
+		"C": {
+			"description": "CPF/CNPJ",
+			"type": "text",
+			"required": true,
+			"patterns": ["ER7", "ER9"]
+		},
+		"D": {
+			"description": "Celular 1",
+			"type": "text",
+			"required": false,
+			"patterns": "ER71"
+		},
+		"E": {
+			"description": "Celular 2",
+			"type": "text",
+			"required": false,
+			"patterns": "ER71"
+		},
+		"G": {
+			"description": "E-mail",
+			"type": "text",
+			"required": false,
+			"patterns": "ER75"
+		},
+		"I": {
+			"description": "Nome da mãe",
+			"type": "text",
+			"required": false,
+			"patterns": "ER48"
+		},
+		"M": {
+			"description": "Endereço",
+			"type": "text",
+			"required": true,
+			"patterns": "ER48"
+		},
+		"N": {
+			"description": "Bairro",
+			"type": "text",
+			"required": true,
+			"patterns": "ER48"
+		},
+		"O": {
+			"description": "Município",
+			"type": "text",
+			"required": true,
+			"patterns": "ER48"
+		},
+		"P": {
+			"description": "CEP",
+			"type": "text",
+			"required": true,
+			"patterns": "ER70"
+		},
+		"AS": {
+			"description": "Destinatário alternativo",
+			"type": "text",
+			"required": false,
+			"patterns": "ER48"
+		},
+		"AT": {
+			"description": "Endereço alternativo",
+			"type": "text",
+			"required": false,
+			"patterns": "ER48"
+		},
+		"AU": {
+			"description": "Bairro alternativo",
+			"type": "text",
+			"required": false,
+			"patterns": "ER48"
+		},
+		"AV": {
+			"description": "CEP alternativo",
+			"type": "text",
+			"required": false,
+			"patterns": "ER70"
+		},
+		"AW": {
+			"description": "Município alternativo",
+			"type": "text",
+			"required": false,
+			"patterns": "ER48"
+		},
+		"AX": {
+			"description": "UF alternativa",
+			"type": "text",
+			"required": false,
+			"domain": "D6"
+		},
+		"AY": {
+			"description": "Endereço secundário",
+			"type": "text",
+			"required": false,
+			"patterns": "ER48"
+		},
+		"AZ": {
+			"description": "Bairro secundário",
+			"type": "text",
+			"required": false,
+			"patterns": "ER48"
+		},
+		"BA": {
+			"description": "CEP secundário",
+			"type": "text",
+			"required": false,
+			"patterns": "ER70"
+		},
+		"BB": {
+			"description": "Município secundário",
+			"type": "text",
+			"required": false,
+			"patterns": "ER48"
+		},
+		"BC": {
+			"description": "UF secundária",
+			"type": "text",
+			"required": false,
+			"domain": "D6"
+		}
+	},
+	"sanitiser": {
+		"entity": {
+			"cpf_cnpj_column": "C",
+			"capitalise": true,
+			"cpf": {
+				"api": {
+					"url": "https://api.cpf-brasil.org/cpf/{cpf}",
+					"headers": {
+						"X-API-Key": "7c6400808ce40d375399ca5cea23ad4d"
+					}
+				},
+				"response_to_column": {
+					"NOME": "B",
+					"SEXO": null,
+					"NASC": null,
+					"NOME_MAE": "I"
+				}
+			},
+			"cnpj": {
+				"api": {
+					"url": "https://api.opencnpj.org/{cnpj}"
+				},
+				"response_to_column": {
+					"razao_social": "B"
+				}
+			}
+		},
+		"address": {
+			"cep_column": "P",
+			"capitalise": true,
+			"api": {
+				"url": "https://viacep.com.br/ws/{cep}/json/"
+			},
+			"response_to_column": {
+				"logradouro": "M",
+				"bairro": "N",
+				"localidade": "O"
+			}
+		}
+	}
+}

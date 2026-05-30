@@ -1,0 +1,23 @@
+.venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+
+# Artefatos de build (regeneraveis)
+build/
+dist/
+
+# Arquivos temporarios do sistema operacional
+.DS_Store
+
+# Texto auxiliar extraído de PDFs da documentação (regenerável)
+documentation/_extract*.txt
+documentation/_ers_parsed.json
+
+# Lock de planilha aberta no LibreOffice / Excel
+**/.~lock*
+
+# Saidas locais da UI desktop (pipeline por execucao)
+runs/

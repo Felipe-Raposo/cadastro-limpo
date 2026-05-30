@@ -1,0 +1,51 @@
+name: Windows build (Cadastro Limpo)
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - "tools/**"
+      - ".github/workflows/windows-build.yml"
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: PyInstaller bundle
+        shell: pwsh
+        run: |
+          & "${{ github.workspace }}/tools/desktop_ui/build_windows.ps1"
+
+      - name: Upload application folder
+        uses: actions/upload-artifact@v4
+        with:
+          name: cadastro-limpo-windows
+          path: tools/dist/cadastro-limpo/
+
+      - name: Install Inno Setup
+        run: choco install innosetup -y
+
+      - name: Compile installer
+        shell: pwsh
+        run: |
+          $candidates = @(
+            "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe",
+            "${env:ProgramFiles}\Inno Setup 6\ISCC.exe"
+          )
+          $iscc = $candidates | Where-Object { Test-Path -LiteralPath $_ } | Select-Object -First 1
+          if (-not $iscc) {
+            throw "ISCC.exe not found after Inno Setup install. Tried: $($candidates -join ', ')"
+          }
+          & $iscc "${{ github.workspace }}/tools/desktop_ui/installer/cadastro-limpo.iss"
+
+      - name: Upload installer
+        uses: actions/upload-artifact@v4
+        with:
+          name: cadastro-limpo-setup
+          path: tools/desktop_ui/installer/Output/*.exe
