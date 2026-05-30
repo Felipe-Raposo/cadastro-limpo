@@ -13,5 +13,6 @@ pyinstaller \
   --name cadastro-limpo \
   --icon "${SCRIPT_DIR}/icon.png" \
   --add-data "${SCRIPT_DIR}/icon.png:desktop_ui" \
+  --add-data "${TOOLS_DIR}/patterns.json:." \
   --paths "${TOOLS_DIR}" \
   desktop_ui/main.py

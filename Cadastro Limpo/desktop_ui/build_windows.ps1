@@ -20,6 +20,7 @@ pyinstaller `
   --name cadastro-limpo `
   --icon "$IconPath" `
   --add-data "$IconPath;desktop_ui" `
+  --add-data "$ToolsDir\patterns.json;." `
   --collect-data sanitiser `
   --paths "$ToolsDir" `
   desktop_ui/main.py

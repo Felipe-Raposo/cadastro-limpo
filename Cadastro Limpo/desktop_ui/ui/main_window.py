@@ -33,6 +33,7 @@ from PySide6.QtWidgets import (
 
 from desktop_ui import __author__, __author_email__, __description__, __version__
 from desktop_ui.application.artifact_service import export_artifacts_bundle
+from desktop_ui.application.default_paths import resolve_patterns_path
 from desktop_ui.application.log_diff_service import render_diff_summary_text
 from desktop_ui.application.pipeline_service import PipelineCancelled, PipelineService
 from desktop_ui.models.run_artifacts import RunArtifacts
@@ -512,9 +513,8 @@ class MainWindow(QMainWindow):
         self._path_validation_timer.start()
 
     def _fill_default_paths(self) -> None:
-        tools_dir = Path(__file__).resolve().parents[2]
-        self._layout_input.setText(str(tools_dir / "layout.morador.json"))
-        self._patterns_input.setText(str(tools_dir / "patterns.json"))
+        self._layout_input.clear()
+        self._patterns_input.setText(str(resolve_patterns_path()))
 
     def _browse_file(self, mode: str) -> None:
         if mode == "excel":
