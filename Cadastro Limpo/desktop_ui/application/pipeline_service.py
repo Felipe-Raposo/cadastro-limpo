@@ -20,6 +20,7 @@ from validator.validator import (
 from sanitiser.layout import SanitiserLayout
 from sanitiser.updater import WorkbookUpdateCancelled, update_workbook_from_api
 
+from desktop_ui.application.default_paths import runs_base_dir as runs_base_dir_factory
 from desktop_ui.application.log_diff_service import compare_char_logs, render_diff_summary_text
 from desktop_ui.models.run_artifacts import RunArtifacts
 
@@ -41,7 +42,7 @@ class PipelineService:
         workbook_updater: Callable[..., int] = update_workbook_from_api,
         cell_highlight_writer: Callable[..., None] = write_error_cell_highlights,
     ) -> None:
-        self._runs_base_dir = Path(runs_base_dir or Path(__file__).resolve().parents[2] / "runs")
+        self._runs_base_dir = Path(runs_base_dir) if runs_base_dir is not None else runs_base_dir_factory()
         self._patterns_loader = patterns_loader
         self._char_layout_loader = char_layout_loader
         self._workbook_validator = workbook_validator

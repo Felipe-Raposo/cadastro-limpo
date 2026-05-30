@@ -33,7 +33,7 @@ from PySide6.QtWidgets import (
 
 from desktop_ui import __author__, __author_email__, __description__, __version__
 from desktop_ui.application.artifact_service import export_artifacts_bundle
-from desktop_ui.application.default_paths import resolve_patterns_path
+from desktop_ui.application.default_paths import clear_runs_dir, resolve_patterns_path
 from desktop_ui.application.log_diff_service import render_diff_summary_text
 from desktop_ui.application.pipeline_service import PipelineCancelled, PipelineService
 from desktop_ui.models.run_artifacts import RunArtifacts
@@ -238,6 +238,9 @@ class MainWindow(QMainWindow):
         super().__init__()
         self.setWindowTitle("Cadastro Limpo")
         self.resize(1050, 500)
+
+        # Ao acessar o aplicativo, limpa a pasta temporária de runs de execuções anteriores.
+        clear_runs_dir()
 
         self._pipeline = PipelineService()
         self._thread: QThread | None = None
@@ -836,4 +839,7 @@ class MainWindow(QMainWindow):
             )
             event.ignore()
             return
+        # Ao finalizar a rotina, limpa a pasta temporária de runs.
+        self._last_artifacts = None
+        clear_runs_dir()
         event.accept()

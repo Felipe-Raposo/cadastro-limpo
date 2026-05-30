@@ -2,11 +2,14 @@ from __future__ import annotations
 
 import shutil
 import sys
+import tempfile
 from pathlib import Path
 
 from sanitiser.api_cache import app_cache_dir
 
 _PATTERNS_FILENAME = "patterns.json"
+_RUNS_DIRNAME = "runs"
+_TEMP_DIRNAME = "Cadastro Limpo"
 
 
 def default_patterns_seed_path() -> Path:
@@ -36,8 +39,28 @@ def resolve_patterns_path() -> Path:
     return target
 
 
+def runs_base_dir() -> Path:
+    """Pasta dos artefatos de execução na área temporária do usuário.
+
+    Fica fora do diretório dos executáveis para não poluir a instalação e por
+    ser descartável: o conteúdo é limpo ao abrir e ao fechar o aplicativo.
+    """
+    runs_dir = Path(tempfile.gettempdir()) / _TEMP_DIRNAME / _RUNS_DIRNAME
+    runs_dir.mkdir(parents=True, exist_ok=True)
+    return runs_dir
+
+
+def clear_runs_dir() -> None:
+    """Remove todo o conteúdo da pasta de runs temporária, recriando-a vazia."""
+    runs_dir = Path(tempfile.gettempdir()) / _TEMP_DIRNAME / _RUNS_DIRNAME
+    shutil.rmtree(runs_dir, ignore_errors=True)
+    runs_dir.mkdir(parents=True, exist_ok=True)
+
+
 __all__ = [
+    "clear_runs_dir",
     "default_patterns_seed_path",
     "resolve_patterns_path",
+    "runs_base_dir",
     "user_patterns_path",
 ]
