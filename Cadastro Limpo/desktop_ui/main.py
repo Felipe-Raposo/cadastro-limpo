@@ -11,10 +11,17 @@ from desktop_ui.ui.main_window import MainWindow
 
 
 def _app_icon_path() -> Path:
-    icon_name = "icon.ico" if sys.platform.startswith("win") else "icon.png"
-    if getattr(sys, "frozen", False):
-        return Path(sys._MEIPASS) / "desktop_ui" / icon_name
-    return Path(__file__).resolve().parent / icon_name
+    resource_dir = (
+        Path(sys._MEIPASS) / "desktop_ui"
+        if getattr(sys, "frozen", False)
+        else Path(__file__).resolve().parent
+    )
+    icon_candidates = ["icon.png", "icon.ico"]
+    for icon_name in icon_candidates:
+        icon_path = resource_dir / icon_name
+        if icon_path.is_file():
+            return icon_path
+    return resource_dir / "icon.png"
 
 
 def main() -> int:
