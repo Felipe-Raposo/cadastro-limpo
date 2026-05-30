@@ -47,8 +47,10 @@ def _build_parser() -> argparse.ArgumentParser:
     )
     cg = p.add_argument_group(
         "cache",
-        "Cache SQLite das consultas CPF/CNPJ/CEP (reutiliza respostas; padrão: arquivo versionado em "
-        "sanitiser/data/api_cache.sqlite no repositório/pacote).",
+        "Cache SQLite das consultas CPF/CNPJ/CEP (reutiliza respostas; padrão: pasta de cache "
+        "do usuário por SO — Windows %LOCALAPPDATA%\\Cadastro Limpo, macOS ~/Library/Caches/"
+        "Cadastro Limpo, Linux ~/.cache/cadastro-limpo — populada na primeira execução a partir "
+        "do sqlite embarcado).",
     )
     cg.add_argument(
         "--no-cache",
@@ -60,7 +62,8 @@ def _build_parser() -> argparse.ArgumentParser:
         type=Path,
         default=None,
         metavar="PATH",
-        help="Caminho do arquivo .sqlite do cache (ignorado se --no-cache).",
+        help="Caminho do arquivo .sqlite do cache (sobrescreve o padrão na pasta do usuário; "
+        "ignorado se --no-cache).",
     )
     return p
 

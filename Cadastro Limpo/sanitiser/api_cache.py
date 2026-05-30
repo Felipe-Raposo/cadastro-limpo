@@ -2,15 +2,58 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
+import shutil
 import sqlite3
+import sys
 from contextlib import contextmanager
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, Iterator, Mapping, Optional, Tuple
 
+_APP_NAME = "Cadastro Limpo"
+_APP_SLUG = "cadastro-limpo"
+_DB_FILENAME = "api_cache.sqlite"
+
+
 def default_api_cache_db_path() -> Path:
-    """Arquivo versionado junto ao pacote (`sanitiser/data/api_cache.sqlite`)."""
-    return Path(__file__).resolve().parent / "data" / "api_cache.sqlite"
+    """Arquivo embarcado junto ao pacote (`sanitiser/data/api_cache.sqlite`), usado como seed."""
+    if getattr(sys, "frozen", False):
+        base = Path(getattr(sys, "_MEIPASS", Path(sys.executable).resolve().parent))
+        return base / "sanitiser" / "data" / _DB_FILENAME
+    return Path(__file__).resolve().parent / "data" / _DB_FILENAME
+
+
+def app_cache_dir() -> Path:
+    """Pasta-padrao de cache do usuario por SO (oculta por convencao do sistema)."""
+    if sys.platform.startswith("win"):
+        base = os.environ.get("LOCALAPPDATA") or (Path.home() / "AppData" / "Local")
+        cache_dir = Path(base) / _APP_NAME
+    elif sys.platform == "darwin":
+        cache_dir = Path.home() / "Library" / "Caches" / _APP_NAME
+    else:
+        base = os.environ.get("XDG_CACHE_HOME") or (Path.home() / ".cache")
+        cache_dir = Path(base) / _APP_SLUG
+    cache_dir.mkdir(parents=True, exist_ok=True)
+    return cache_dir
+
+
+def user_api_cache_db_path() -> Path:
+    """Caminho do cache SQLite na pasta de cache do usuario."""
+    return app_cache_dir() / _DB_FILENAME
+
+
+def resolve_cache_db_path() -> Path:
+    """
+    Caminho padrao do cache na pasta do usuario, copiando o sqlite embarcado
+    (seed) na primeira execucao. Se nao houver seed, o banco e criado vazio.
+    """
+    target = user_api_cache_db_path()
+    if not target.exists():
+        seed = default_api_cache_db_path()
+        if seed.is_file():
+            shutil.copyfile(seed, target)
+    return target
 
 
 def source_id_from(url_template: str, headers: Mapping[str, str]) -> str:
@@ -199,4 +242,11 @@ class ApiCache:
             self._conn.commit()
 
 
-__all__ = ["ApiCache", "default_api_cache_db_path", "source_id_from"]
+__all__ = [
+    "ApiCache",
+    "app_cache_dir",
+    "default_api_cache_db_path",
+    "resolve_cache_db_path",
+    "source_id_from",
+    "user_api_cache_db_path",
+]

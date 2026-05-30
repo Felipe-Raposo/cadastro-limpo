@@ -29,7 +29,13 @@ sanitiser entrada.xlsx -l layout.morador.json -o saida.xlsx --cache-db /caminho/
 - **Fim da planilha**: timeout na leitura do corpo HTTP passa a gerar **aviso por linha** (como os demais erros de API) e o processo **continua** até salvar o `.xlsx` de saída; não encerra mais o programa inteiro com `sanitiser: The read operation timed out`.
 - **Cache SQLite**: respostas **HTTP 4xx** **não** são gravadas; após esgotar as retentativas, a próxima execução tenta de novo. Ao abrir o cache, entradas antigas de erro **HTTP 4xx** são removidas. Erros **definitivos** de outro tipo (JSON inválido, `success=false`, HTTP 5xx após retentativas, etc.) podem ser gravados para não refazer a mesma chamada. Falhas transitórias esgotadas sem sucesso **não** são gravadas.
 
-Consultas CPF/CNPJ/CEP são gravadas em SQLite (por padrão em [`sanitiser/data/api_cache.sqlite`](sanitiser/data/api_cache.sqlite), versionado no repositório) para não repetir HTTP na mesma chave e mesma URL/headers do leiaute. Outro arquivo: `--cache-db /caminho/cache.sqlite`.
+Consultas CPF/CNPJ/CEP são gravadas em SQLite para não repetir HTTP na mesma chave e mesma URL/headers do leiaute. Por padrão o cache fica na **pasta de cache do usuário**, oculta conforme a convenção de cada sistema:
+
+- **Windows**: `%LOCALAPPDATA%\Cadastro Limpo\api_cache.sqlite`
+- **macOS**: `~/Library/Caches/Cadastro Limpo/api_cache.sqlite`
+- **Linux**: `${XDG_CACHE_HOME:-~/.cache}/cadastro-limpo/api_cache.sqlite`
+
+Na primeira execução, a pasta é criada e populada a partir do sqlite embarcado ([`sanitiser/data/api_cache.sqlite`](sanitiser/data/api_cache.sqlite), versionado no repositório como seed). Para usar outro arquivo: `--cache-db /caminho/cache.sqlite`.
 
 Módulo:
 

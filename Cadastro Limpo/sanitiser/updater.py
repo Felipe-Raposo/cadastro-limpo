@@ -16,7 +16,7 @@ from openpyxl import load_workbook
 from openpyxl.styles import PatternFill
 from openpyxl.utils import column_index_from_string
 
-from sanitiser.api_cache import ApiCache, default_api_cache_db_path, source_id_from
+from sanitiser.api_cache import ApiCache, resolve_cache_db_path, source_id_from
 from sanitiser.layout import SanitiserLayout
 
 _DIGITS_ONLY = re.compile(r"\D+")
@@ -533,7 +533,8 @@ def update_workbook_from_api(
     wb = load_workbook(path, read_only=False, data_only=False)
     cache: Optional[ApiCache] = None
     if use_api_cache:
-        cache = ApiCache(cache_db_path or default_api_cache_db_path())
+        db_path = cache_db_path if cache_db_path is not None else resolve_cache_db_path()
+        cache = ApiCache(db_path)
     warnings = 0
     inline_progress = False
     should_commit_cache_batch = False
