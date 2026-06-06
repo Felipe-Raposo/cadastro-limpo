@@ -86,14 +86,14 @@ class AddressBlock:
 class SanitiserLayout:
     initial_line: int
     sheet_name: Optional[str]
-    cpf_cnpj_column: str
-    cpf_url: str
-    cpf_headers: Mapping[str, str]
-    cpf_response_to_column: Mapping[str, Optional[str]]
-    cnpj_url: str
-    cnpj_headers: Mapping[str, str]
-    cnpj_response_to_column: Mapping[str, Optional[str]]
-    address: Optional[AddressBlock]
+    cpf_cnpj_column: Optional[str] = None
+    cpf_url: Optional[str] = None
+    cpf_headers: Mapping[str, str] = field(default_factory=dict)
+    cpf_response_to_column: Mapping[str, Optional[str]] = field(default_factory=dict)
+    cnpj_url: Optional[str] = None
+    cnpj_headers: Mapping[str, str] = field(default_factory=dict)
+    cnpj_response_to_column: Mapping[str, Optional[str]] = field(default_factory=dict)
+    address: Optional[AddressBlock] = None
     entity_capitalise: bool = False
     text_columns: FrozenSet[str] = field(default_factory=frozenset)
 
@@ -138,24 +138,34 @@ class SanitiserLayout:
         if not isinstance(st, dict):
             raise ValueError("Leiaute deve conter objeto 'sanitiser'")
 
+        cpf_cnpj_column: Optional[str] = None
+        cpf_url: Optional[str] = None
+        cpf_headers: Dict[str, str] = {}
+        cpf_map: Dict[str, Optional[str]] = {}
+        cnpj_url: Optional[str] = None
+        cnpj_headers: Dict[str, str] = {}
+        cnpj_map: Dict[str, Optional[str]] = {}
+        entity_capitalise = False
+
         entity = st.get("entity")
-        if not isinstance(entity, dict):
-            raise ValueError("sanitiser.entity deve ser um objeto")
+        if entity is not None:
+            if not isinstance(entity, dict):
+                raise ValueError("sanitiser.entity deve ser um objeto")
 
-        cpf_cnpj_raw = entity.get("cpf_cnpj_column")
-        if not isinstance(cpf_cnpj_raw, str) or not cpf_cnpj_raw.strip():
-            raise ValueError("sanitiser.entity.cpf_cnpj_column é obrigatório (letra da coluna)")
-        cpf_cnpj_column = _normalize_col_letter(cpf_cnpj_raw)
+            cpf_cnpj_raw = entity.get("cpf_cnpj_column")
+            if not isinstance(cpf_cnpj_raw, str) or not cpf_cnpj_raw.strip():
+                raise ValueError("sanitiser.entity.cpf_cnpj_column é obrigatório (letra da coluna)")
+            cpf_cnpj_column = _normalize_col_letter(cpf_cnpj_raw)
 
-        cpf_url, cpf_headers, cpf_map = _parse_api_mapping(
-            entity.get("cpf"), "sanitiser.entity.cpf", "{cpf}"
-        )
-        cnpj_url, cnpj_headers, cnpj_map = _parse_api_mapping(
-            entity.get("cnpj"), "sanitiser.entity.cnpj", "{cnpj}"
-        )
-        entity_capitalise = _optional_bool(
-            entity.get("capitalise"), "sanitiser.entity.capitalise"
-        )
+            cpf_url, cpf_headers, cpf_map = _parse_api_mapping(
+                entity.get("cpf"), "sanitiser.entity.cpf", "{cpf}"
+            )
+            cnpj_url, cnpj_headers, cnpj_map = _parse_api_mapping(
+                entity.get("cnpj"), "sanitiser.entity.cnpj", "{cnpj}"
+            )
+            entity_capitalise = _optional_bool(
+                entity.get("capitalise"), "sanitiser.entity.capitalise"
+            )
 
         address_block: Optional[AddressBlock] = None
         addr_raw = st.get("address")
@@ -181,6 +191,9 @@ class SanitiserLayout:
                 response_to_column=a_map,
                 capitalise=address_capitalise,
             )
+
+        if cpf_cnpj_column is None and address_block is None:
+            raise ValueError("Leiaute deve conter 'sanitiser.entity' ou 'sanitiser.address'")
 
         return SanitiserLayout(
             initial_line=initial,

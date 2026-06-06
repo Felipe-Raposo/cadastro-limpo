@@ -1,6 +1,6 @@
 """Cadastro Limpo — interface desktop para orquestrar o validator e o sanitiser."""
 
-__version__ = "1.0.0"
+__version__ = "1.0.1"
 __author__ = "Felipe Raposo"
 __author_email__ = "feliperaposo@gmail.com"
 __description__ = (

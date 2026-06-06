@@ -1,6 +1,6 @@
 [project]
 name = "char-tool"
-version = "0.1.0"
+version = "1.0.1"
 description = "Ferramentas Excel: validação (validator) e enriquecimento (sanitiser)"
 authors = [{ name = "Felipe Raposo", email = "feliperaposo@gmail.com" }]
 license = { text = """Copyright (c) 2026. Todos os direitos reservados.

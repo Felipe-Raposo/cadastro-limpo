@@ -236,7 +236,7 @@ class ProcessWorker(QObject):
 class MainWindow(QMainWindow):
     def __init__(self) -> None:
         super().__init__()
-        self.setWindowTitle("Cadastro Limpo")
+        self.setWindowTitle(f"Cadastro Limpo {__version__}")
         self.resize(1050, 500)
 
         # Ao acessar o aplicativo, limpa a pasta temporária de runs de execuções anteriores.

@@ -548,7 +548,10 @@ def update_workbook_from_api(
         else:
             ws = wb.active
 
-        doc_idx = column_index_from_string(layout.cpf_cnpj_column)
+        doc_idx: Optional[int] = None
+        if layout.cpf_cnpj_column is not None:
+            doc_idx = column_index_from_string(layout.cpf_cnpj_column)
+
         cep_idx: Optional[int] = None
         if layout.address is not None:
             cep_idx = column_index_from_string(layout.address.cep_column)
@@ -587,8 +590,12 @@ def update_workbook_from_api(
         isatty = getattr(progress_stream, "isatty", lambda: False)
         inline_progress = bool(isatty()) and total_rows > 0
 
-        cpf_source_id = source_id_from(layout.cpf_url, cpf_headers)
-        cnpj_source_id = source_id_from(layout.cnpj_url, cnpj_headers)
+        cpf_source_id: Optional[str] = None
+        if layout.cpf_url is not None:
+            cpf_source_id = source_id_from(layout.cpf_url, cpf_headers)
+        cnpj_source_id: Optional[str] = None
+        if layout.cnpj_url is not None:
+            cnpj_source_id = source_id_from(layout.cnpj_url, cnpj_headers)
         cep_source_id: Optional[str] = None
         if layout.address is not None:
             cep_source_id = source_id_from(
@@ -611,62 +618,63 @@ def update_workbook_from_api(
             if step == 1 or done == 1 or done == total_rows or done % step == 0:
                 _emit_progress(done, total_rows, progress_stream, inline=inline_progress)
 
-            raw_doc = ws.cell(row=row, column=doc_idx).value
-            doc_digits = _normalize_digits(_cell_str(raw_doc))
+            if doc_idx is not None:
+                raw_doc = ws.cell(row=row, column=doc_idx).value
+                doc_digits = _normalize_digits(_cell_str(raw_doc))
 
-            if doc_digits is not None and len(doc_digits) == _CPF_LEN and doc_digits.isdigit():
-                url = layout.cpf_url.replace("{cpf}", doc_digits)
-                payload, err = _fetch_json_cached(
-                    cache,
-                    "cpf",
-                    doc_digits,
-                    cpf_source_id,
-                    url,
-                    cpf_headers,
-                    timeout_sec,
-                    max_retries=max_fetch_retries,
-                )
-                if err is not None:
-                    print(f"sanitiser: linha {row} (CPF): {err}", file=log_stream)
-                    warnings += 1
-                    ws.cell(row=row, column=doc_idx).fill = _API_MISSING_FILL
-                elif payload:
-                    _apply_entity_mapping(
-                        ws,
-                        row,
-                        payload,
-                        layout.cpf_response_to_column,
-                        cpf_col_indices,
-                        use_cpf_aliases=True,
-                        entity_capitalise=layout.entity_capitalise,
+                if doc_digits is not None and len(doc_digits) == _CPF_LEN and doc_digits.isdigit() and layout.cpf_url is not None:
+                    url = layout.cpf_url.replace("{cpf}", doc_digits)
+                    payload, err = _fetch_json_cached(
+                        cache,
+                        "cpf",
+                        doc_digits,
+                        cpf_source_id,
+                        url,
+                        cpf_headers,
+                        timeout_sec,
+                        max_retries=max_fetch_retries,
                     )
+                    if err is not None:
+                        print(f"sanitiser: linha {row} (CPF): {err}", file=log_stream)
+                        warnings += 1
+                        ws.cell(row=row, column=doc_idx).fill = _API_MISSING_FILL
+                    elif payload:
+                        _apply_entity_mapping(
+                            ws,
+                            row,
+                            payload,
+                            layout.cpf_response_to_column,
+                            cpf_col_indices,
+                            use_cpf_aliases=True,
+                            entity_capitalise=layout.entity_capitalise,
+                        )
 
-            elif doc_digits is not None and len(doc_digits) == _CNPJ_LEN and doc_digits.isdigit():
-                url = layout.cnpj_url.replace("{cnpj}", doc_digits)
-                payload, err = _fetch_json_cached(
-                    cache,
-                    "cnpj",
-                    doc_digits,
-                    cnpj_source_id,
-                    url,
-                    cnpj_headers,
-                    timeout_sec,
-                    max_retries=max_fetch_retries,
-                )
-                if err is not None:
-                    print(f"sanitiser: linha {row} (CNPJ): {err}", file=log_stream)
-                    warnings += 1
-                    ws.cell(row=row, column=doc_idx).fill = _API_MISSING_FILL
-                elif payload:
-                    _apply_entity_mapping(
-                        ws,
-                        row,
-                        payload,
-                        layout.cnpj_response_to_column,
-                        cnpj_col_indices,
-                        use_cpf_aliases=False,
-                        entity_capitalise=layout.entity_capitalise,
+                elif doc_digits is not None and len(doc_digits) == _CNPJ_LEN and doc_digits.isdigit() and layout.cnpj_url is not None:
+                    url = layout.cnpj_url.replace("{cnpj}", doc_digits)
+                    payload, err = _fetch_json_cached(
+                        cache,
+                        "cnpj",
+                        doc_digits,
+                        cnpj_source_id,
+                        url,
+                        cnpj_headers,
+                        timeout_sec,
+                        max_retries=max_fetch_retries,
                     )
+                    if err is not None:
+                        print(f"sanitiser: linha {row} (CNPJ): {err}", file=log_stream)
+                        warnings += 1
+                        ws.cell(row=row, column=doc_idx).fill = _API_MISSING_FILL
+                    elif payload:
+                        _apply_entity_mapping(
+                            ws,
+                            row,
+                            payload,
+                            layout.cnpj_response_to_column,
+                            cnpj_col_indices,
+                            use_cpf_aliases=False,
+                            entity_capitalise=layout.entity_capitalise,
+                        )
 
             if layout.address is not None and cep_idx is not None:
                 raw_cep = ws.cell(row=row, column=cep_idx).value

@@ -4,7 +4,7 @@
   <Metadata productVersion="1.6.1" projectFileVersion="2.0"/>
   <ProductInformation>
     <Name>Cadastro Limpo</Name>
-    <Version>1.0.0</Version>
+    <Version>1.0.1</Version>
     <CompanyName>FJ</CompanyName>
     <WebURI/>
   </ProductInformation>
@@ -40,11 +40,11 @@
     <Variables/>
     <Commands/>
     <Registry/>
-    <Shortcuts defaultPath="&lt;Company&gt;\&lt;AppName&gt;\" isDefaultPathAlterable="false" isCreateStartmenuShortcutsForAllUsers="false" isCreateDesktopShortcutsForAllUsers="false">
+    <Shortcuts defaultPath="&lt;Company&gt;\&lt;AppName&gt;\" isDefaultPathAlterable="false" isCreateStartmenuShortcutsForAllUsers="true" isCreateDesktopShortcutsForAllUsers="true">
       <Shortcut destination="Startmenu" name="Cadastro Limpo" targetFile="&lt;InstallPath&gt;\bin\cadastro-limpo.exe" commandLineArguments="" iconFilePath="" iconIndex="0"/>
     </Shortcuts>
     <Serials isDialogEnabled="false" count="1000" mask ="#####-#####-#####-#####"/>
-    <SplashScreen isDialogEnabled="true" delayTime="2">
+    <SplashScreen isDialogEnabled="false" delayTime="2">
       <Image filePath="D:\cadastro-limpo\Cadastro Limpo\desktop_ui\icon.png"/>
       <Sound isEnabled="false" filePath=""/>
     </SplashScreen>
@@ -74,7 +74,7 @@
     <Program executableFilePath="cadastro-limpo.exe" isLaunchEnabled="true" isTerminationEnabled="false"/>
   </VisualUpdateConfiguration>
   <BuildConfiguration>
-    <SetupFilePath>D:\frapo\Downloads\CadastroLimpo_1.0.0_Win_x86.exe</SetupFilePath>
+    <SetupFilePath>D:\frapo\Downloads\CadastroLimpo_1.0.1_Win_x86.exe</SetupFilePath>
     <SetupIconPath>..\icons\ancient.ico</SetupIconPath>
     <UninstallerIconPath>..\icons\ancient.ico</UninstallerIconPath>
     <Compression method="0" level="2"/>
